@@ -18,7 +18,7 @@ object AdDetect : KotlinPlugin(
     JvmPluginDescription(
         id = "tk.mcsog.ad-detect",
         name = "Ad Detect",
-        version = "0.1.0",
+        version = "0.1.1",
     ) {
         author("MCSOG")
     }
