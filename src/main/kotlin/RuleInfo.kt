@@ -9,6 +9,6 @@ data class RuleInfo(
     var msgControl: Boolean = false,
     val keyword: ArrayList<String> = arrayListOf(),
     var joinControl: Boolean = false,
-    val whiteList: ArrayList<Long> = arrayListOf(PluginConf.manager),
+    val whiteList: ArrayList<Long> = arrayListOf(),
     val blackList: ArrayList<Long> = arrayListOf()
 )
