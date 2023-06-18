@@ -18,7 +18,7 @@ object AdDetect : KotlinPlugin(
     JvmPluginDescription(
         id = "tk.mcsog.ad-detect",
         name = "Ad Detect",
-        version = "0.1.1",
+        version = "0.1.2",
     ) {
         author("MCSOG")
     }
@@ -472,15 +472,18 @@ object AdDetect : KotlinPlugin(
                         this.member.kick("黑名单成员")
                         chainDetect(this.group, this.member.id, it2, it1)
                         return@subscribeAlways
-                    }
-                    if (it2.joinControl){
-                        val a: Int = Random.nextInt(0,5)
-                        val b: Int = Random.nextInt(0,5)
-                        val c: Int = a + b
-                        val valid = ValidInfo(this.group.id, this.member.id, 0, c.toString())
-                        this.group.sendMessage(At(this.member.id) + PlainText("请回答：$a + $b = ?"))
-                        PluginData.validData[this.group.id.toString()+"-"+this.member.id.toString()] = valid
-                        return@subscribeAlways
+                    }else if (this.member.id !in it2.whiteList){
+                        if (this.member.id !in it2.admin){
+                            if (it2.joinControl){
+                                val a: Int = Random.nextInt(0,5)
+                                val b: Int = Random.nextInt(0,5)
+                                val c: Int = a + b
+                                val valid = ValidInfo(this.group.id, this.member.id, 0, c.toString())
+                                this.group.sendMessage(At(this.member.id) + PlainText("请回答：$a + $b = ?"))
+                                PluginData.validData[this.group.id.toString()+"-"+this.member.id.toString()] = valid
+                                return@subscribeAlways
+                            }
+                        }
                     }
                 }
             }
