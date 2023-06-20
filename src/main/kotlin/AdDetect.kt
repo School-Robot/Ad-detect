@@ -3,10 +3,7 @@ package tk.mcsog
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.event.events.GroupMessageEvent
-import net.mamoe.mirai.event.events.MemberJoinEvent
-import net.mamoe.mirai.event.events.MemberJoinRequestEvent
-import net.mamoe.mirai.event.events.MemberLeaveEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.globalEventChannel
 import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
@@ -18,7 +15,7 @@ object AdDetect : KotlinPlugin(
     JvmPluginDescription(
         id = "tk.mcsog.ad-detect",
         name = "Ad Detect",
-        version = "0.1.2",
+        version = "0.1.4",
     ) {
         author("MCSOG")
     }
@@ -481,7 +478,6 @@ object AdDetect : KotlinPlugin(
                                 val valid = ValidInfo(this.group.id, this.member.id, 0, c.toString())
                                 this.group.sendMessage(At(this.member.id) + PlainText("请回答：$a + $b = ?"))
                                 PluginData.validData[this.group.id.toString()+"-"+this.member.id.toString()] = valid
-                                return@subscribeAlways
                             }
                         }
                     }
@@ -518,6 +514,9 @@ object AdDetect : KotlinPlugin(
                         else -> {
                             if (it2.joinControl){
                                 this.accept()
+                                this.invitorId?.let {
+                                    it1.inviteChain[this.fromId] = it
+                                }
                                 return@subscribeAlways
                             }
                         }
@@ -532,15 +531,26 @@ object AdDetect : KotlinPlugin(
                 PluginData.validData.remove(this.group.id.toString()+"-"+this.member.id.toString())
             }
         }
+
+        globalEventChannel().subscribeAlways<MemberCardChangeEvent> {
+            PluginData.groupData[this.group.id]?.let {
+                this.group.sendMessage(this.member.id.toString()+"修改了群昵称： "+this.origin+" -> "+this.new)
+            }
+        }
     }
 
     private suspend fun chainDetect(group: Group, qq: Long, rule: RuleInfo, groupInfo: GroupInfo){
         val temp: ArrayList<Long> = arrayListOf()
+        if (qq in rule.admin || qq in rule.whiteList){
+            return
+        }
         groupInfo.inviteChain[qq]?.let { it2 ->
-            group.members[it2]?.kick("邀请链检测")
-            rule.blackList.add(it2)
-            groupInfo.inviteChain.remove(qq)
             chainDetect(group, it2, rule, groupInfo)
+            group.members[it2]?.kick("邀请链检测")
+            if (it2 !in rule.blackList) {
+                rule.blackList.add(it2)
+            }
+            groupInfo.inviteChain.remove(qq)
         }
         groupInfo.inviteChain.forEach {
             if (it.value == qq){
@@ -549,9 +559,11 @@ object AdDetect : KotlinPlugin(
         }
         temp.forEach {
             groupInfo.inviteChain.remove(it)
-            group.members[it]?.kick("邀请链检测")
-            rule.blackList.add(it)
             chainDetect(group, it, rule, groupInfo)
+            group.members[it]?.kick("邀请链检测")
+            if (it !in rule.blackList) {
+                rule.blackList.add(it)
+            }
         }
     }
 
