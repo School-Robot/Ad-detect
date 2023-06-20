@@ -1,5 +1,7 @@
 package tk.mcsog
 
+import kotlinx.coroutines.launch
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.contact.Group
@@ -15,7 +17,7 @@ object AdDetect : KotlinPlugin(
     JvmPluginDescription(
         id = "tk.mcsog.ad-detect",
         name = "Ad Detect",
-        version = "0.1.4",
+        version = "0.1.5",
     ) {
         author("MCSOG")
     }
@@ -33,7 +35,10 @@ object AdDetect : KotlinPlugin(
                         this.group.sendMessage("检测到黑名单成员，已移出群")
                         this.group.members[this.sender.id]?.kick("检测到黑名单成员，已移出群")
                         this.group.sendMessage("正在检测邀请链并移除")
-                        chainDetect(this.group, this.sender.id, it2, it1)
+                        launch {
+                            chainDetect(it.group, it.sender.id, it2, it1)
+                            blackDetect(it2)
+                        }
                         return@subscribeAlways
                     }else if (this.sender.id in it2.whiteList) {
                         return@subscribeAlways
@@ -45,7 +50,10 @@ object AdDetect : KotlinPlugin(
                                 it2.blackList.add(this.sender.id)
                                 this.group.members[this.sender.id]?.kick("检测到广告关键词，已移出群")
                                 this.group.sendMessage("正在检测邀请链并移除")
-                                chainDetect(this.group, this.sender.id, it2, it1)
+                                launch {
+                                    chainDetect(it.group, it.sender.id, it2, it1)
+                                    blackDetect(it2)
+                                }
                                 return@subscribeAlways
                             }
                         }
@@ -467,7 +475,10 @@ object AdDetect : KotlinPlugin(
                 PluginData.ruleData[it1.rule]?.let { it2 ->
                     if (this.member.id in it2.blackList){
                         this.member.kick("黑名单成员")
-                        chainDetect(this.group, this.member.id, it2, it1)
+                        launch {
+                            chainDetect(it.group, it.member.id, it2, it1)
+                            blackDetect(it2)
+                        }
                         return@subscribeAlways
                     }else if (this.member.id !in it2.whiteList){
                         if (this.member.id !in it2.admin){
@@ -508,7 +519,10 @@ object AdDetect : KotlinPlugin(
                             this.invitor?.let {
                                 it.kick("邀请黑名单成员")
                                 it2.blackList.add(it.id)
-                                chainDetect(this.group!!, it.id, it2, it1)
+                                launch {
+                                    chainDetect(it.group!!, it.id, it2, it1)
+                                    blackDetect(it2)
+                                }
                             }
                         }
                         else -> {
@@ -539,6 +553,20 @@ object AdDetect : KotlinPlugin(
         }
     }
 
+    private suspend fun blackDetect(rule: RuleInfo){
+        PluginData.groupData.forEach {  grp ->
+            if (grp.value.rule == rule.ruleName){
+                Bot.instances.forEach {  bot ->
+                    bot.groups[grp.key]?.let { g ->
+                        val bl: ArrayList<Long> = rule.blackList
+                        bl.forEach {
+                            chainDetect(g, it, rule, grp.value)
+                        }
+                    }
+                }
+            }
+        }
+    }
     private suspend fun chainDetect(group: Group, qq: Long, rule: RuleInfo, groupInfo: GroupInfo){
         val temp: ArrayList<Long> = arrayListOf()
         if (qq in rule.admin || qq in rule.whiteList){
