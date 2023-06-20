@@ -516,11 +516,11 @@ object AdDetect : KotlinPlugin(
                         }
                         in it2.blackList -> {
                             this.reject(false, "黑名单成员")
-                            this.invitor?.let {
-                                it.kick("邀请黑名单成员")
-                                it2.blackList.add(it.id)
+                            this.invitor?.let { mbr ->
+                                //it.kick("邀请黑名单成员")
+                                it2.blackList.add(mbr.id)
                                 launch {
-                                    chainDetect(it.group!!, it.id, it2, it1)
+                                    chainDetect(it.group!!, mbr.id, it2, it1)
                                     blackDetect(it2)
                                 }
                             }
