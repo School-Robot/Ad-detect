@@ -33,7 +33,7 @@ object AdDetect : KotlinPlugin(
                     if (this.sender.id in it2.blackList) {
                         this.message.recall()
                         this.group.sendMessage("检测到黑名单成员，已移出群")
-                        this.group.members[this.sender.id]?.kick("检测到黑名单成员，已移出群")
+                        //this.group.members[this.sender.id]?.kick("检测到黑名单成员，已移出群")
                         this.group.sendMessage("正在检测邀请链并移除")
                         launch {
                             chainDetect(it.group, it.sender.id, it2, it1)
@@ -48,7 +48,7 @@ object AdDetect : KotlinPlugin(
                                 this.message.recall()
                                 this.group.sendMessage("检测到广告关键词，已移出群并加黑名单")
                                 it2.blackList.add(this.sender.id)
-                                this.group.members[this.sender.id]?.kick("检测到广告关键词，已移出群")
+                                //this.group.members[this.sender.id]?.kick("检测到广告关键词，已移出群")
                                 this.group.sendMessage("正在检测邀请链并移除")
                                 launch {
                                     chainDetect(it.group, it.sender.id, it2, it1)
@@ -474,7 +474,6 @@ object AdDetect : KotlinPlugin(
             PluginData.groupData[this.group.id]?.let { it1 ->
                 PluginData.ruleData[it1.rule]?.let { it2 ->
                     if (this.member.id in it2.blackList){
-                        this.member.kick("黑名单成员")
                         launch {
                             chainDetect(it.group, it.member.id, it2, it1)
                             blackDetect(it2)
@@ -517,7 +516,6 @@ object AdDetect : KotlinPlugin(
                         in it2.blackList -> {
                             this.reject(false, "黑名单成员")
                             this.invitor?.let { mbr ->
-                                //it.kick("邀请黑名单成员")
                                 it2.blackList.add(mbr.id)
                                 launch {
                                     chainDetect(it.group!!, mbr.id, it2, it1)
@@ -578,20 +576,24 @@ object AdDetect : KotlinPlugin(
             if (it2 !in rule.blackList) {
                 rule.blackList.add(it2)
             }
-            groupInfo.inviteChain.remove(qq)
         }
+        if (qq !in rule.blackList) {
+            rule.blackList.add(qq)
+        }
+        group.members[qq]?.kick("")
+        groupInfo.inviteChain.remove(qq)
         groupInfo.inviteChain.forEach {
             if (it.value == qq){
                 temp.add(it.key)
             }
         }
         temp.forEach {
-            groupInfo.inviteChain.remove(it)
+            //groupInfo.inviteChain.remove(it)
             chainDetect(group, it, rule, groupInfo)
-            group.members[it]?.kick("邀请链检测")
-            if (it !in rule.blackList) {
-                rule.blackList.add(it)
-            }
+            //group.members[it]?.kick("邀请链检测")
+            //if (it !in rule.blackList) {
+            //    rule.blackList.add(it)
+            //}
         }
     }
 
