@@ -17,7 +17,7 @@ object AdDetect : KotlinPlugin(
     JvmPluginDescription(
         id = "tk.mcsog.ad-detect",
         name = "Ad Detect",
-        version = "0.1.6",
+        version = "0.1.7",
     ) {
         author("MCSOG")
     }
@@ -471,6 +471,11 @@ object AdDetect : KotlinPlugin(
         }
 
         globalEventChannel().subscribeAlways<MemberJoinEvent> {
+            if (it is MemberJoinEvent.Invite){
+                PluginData.groupData[this.group.id]?.let { it1 ->
+                    it1.inviteChain[this.member.id] = it.invitor.id
+                }
+            }
             PluginData.groupData[this.group.id]?.let { it1 ->
                 PluginData.ruleData[it1.rule]?.let { it2 ->
                     if (this.member.id in it2.blackList){
@@ -491,12 +496,6 @@ object AdDetect : KotlinPlugin(
                             }
                         }
                     }
-                }
-            }
-            if (it is MemberJoinEvent.Invite){
-                PluginData.groupData[this.group.id]?.let { it1 ->
-                    it1.inviteChain[this.member.id] = it.invitor.id
-                    return@subscribeAlways
                 }
             }
         }
@@ -571,6 +570,7 @@ object AdDetect : KotlinPlugin(
             return
         }
         groupInfo.inviteChain[qq]?.let { it2 ->
+            groupInfo.inviteChain.remove(qq)
             chainDetect(group, it2, rule, groupInfo)
             group.members[it2]?.kick("邀请链检测")
             if (it2 !in rule.blackList) {
@@ -581,7 +581,6 @@ object AdDetect : KotlinPlugin(
             rule.blackList.add(qq)
         }
         group.members[qq]?.kick("")
-        groupInfo.inviteChain.remove(qq)
         groupInfo.inviteChain.forEach {
             if (it.value == qq){
                 temp.add(it.key)
