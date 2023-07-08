@@ -17,7 +17,7 @@ object AdDetect : KotlinPlugin(
     JvmPluginDescription(
         id = "tk.mcsog.ad-detect",
         name = "Ad Detect",
-        version = "0.1.7",
+        version = "0.1.8",
     ) {
         author("MCSOG")
     }
@@ -176,13 +176,24 @@ object AdDetect : KotlinPlugin(
                         PluginData.ruleData[it.rule]?.let {
                             if (this.sender.id in it.admin){
                                 val qq: Long = m_split[1].toLong()
-                                if (qq in it.admin){
-                                    this.group.sendMessage(At(this.sender.id) +PlainText("管理员已存在"))
-                                    return@subscribeAlways
-                                }else {
-                                    it.admin.add(qq)
-                                    this.group.sendMessage(At(this.sender.id) + PlainText("管理员添加成功"))
-                                    return@subscribeAlways
+                                when (qq) {
+                                    in it.whiteList -> {
+                                        this.group.sendMessage(At(this.sender.id) +PlainText("白名单成员"))
+                                        return@subscribeAlways
+                                    }
+                                    in it.blackList -> {
+                                        this.group.sendMessage(At(this.sender.id) +PlainText("黑名单成员"))
+                                        return@subscribeAlways
+                                    }
+                                    in it.admin -> {
+                                        this.group.sendMessage(At(this.sender.id) +PlainText("管理员已存在"))
+                                        return@subscribeAlways
+                                    }
+                                    else -> {
+                                        it.admin.add(qq)
+                                        this.group.sendMessage(At(this.sender.id) + PlainText("管理员添加成功"))
+                                        return@subscribeAlways
+                                    }
                                 }
                             }else{
                                 this.group.sendMessage(At(this.sender.id) +PlainText("权限不足"))
@@ -346,13 +357,24 @@ object AdDetect : KotlinPlugin(
                         PluginData.ruleData[it1.rule]?.let {
                             if (this.sender.id in it.admin){
                                 val qq: Long = m_split[1].toLong()
-                                if (qq in it.whiteList){
-                                    this.group.sendMessage(At(this.sender.id) +PlainText("白名单成员已存在"))
-                                    return@subscribeAlways
-                                }else {
-                                    it.whiteList.add(qq)
-                                    this.group.sendMessage(At(this.sender.id) + PlainText("白名单成员添加成功"))
-                                    return@subscribeAlways
+                                when (qq) {
+                                    in it.blackList -> {
+                                        this.group.sendMessage(At(this.sender.id) +PlainText("黑名单成员"))
+                                        return@subscribeAlways
+                                    }
+                                    in it.admin -> {
+                                        this.group.sendMessage(At(this.sender.id) +PlainText("管理员"))
+                                        return@subscribeAlways
+                                    }
+                                    in it.whiteList -> {
+                                        this.group.sendMessage(At(this.sender.id) +PlainText("白名单成员已存在"))
+                                        return@subscribeAlways
+                                    }
+                                    else -> {
+                                        it.whiteList.add(qq)
+                                        this.group.sendMessage(At(this.sender.id) + PlainText("白名单成员添加成功"))
+                                        return@subscribeAlways
+                                    }
                                 }
                             }else{
                                 this.group.sendMessage(At(this.sender.id) +PlainText("权限不足"))
@@ -412,13 +434,24 @@ object AdDetect : KotlinPlugin(
                         PluginData.ruleData[it1.rule]?.let {
                             if (this.sender.id in it.admin){
                                 val qq: Long = m_split[1].toLong()
-                                if (qq in it.blackList){
-                                    this.group.sendMessage(At(this.sender.id) +PlainText("黑名单成员已存在"))
-                                    return@subscribeAlways
-                                }else {
-                                    it.blackList.add(qq)
-                                    this.group.sendMessage(At(this.sender.id) + PlainText("黑名单成员添加成功"))
-                                    return@subscribeAlways
+                                when (qq) {
+                                    in it.whiteList -> {
+                                        this.group.sendMessage(At(this.sender.id) +PlainText("白名单成员"))
+                                        return@subscribeAlways
+                                    }
+                                    in it.admin -> {
+                                        this.group.sendMessage(At(this.sender.id) +PlainText("管理员"))
+                                        return@subscribeAlways
+                                    }
+                                    in it.blackList -> {
+                                        this.group.sendMessage(At(this.sender.id) +PlainText("黑名单成员已存在"))
+                                        return@subscribeAlways
+                                    }
+                                    else -> {
+                                        it.blackList.add(qq)
+                                        this.group.sendMessage(At(this.sender.id) + PlainText("黑名单成员添加成功"))
+                                        return@subscribeAlways
+                                    }
                                 }
                             }else{
                                 this.group.sendMessage(At(this.sender.id) +PlainText("权限不足"))
