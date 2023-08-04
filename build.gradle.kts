@@ -1,13 +1,12 @@
 plugins {
-    val kotlinVersion = "1.8.21"
+    val kotlinVersion = "1.8.22"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.serialization") version kotlinVersion
-
-    id("net.mamoe.mirai-console") version "2.15.0-M1"
+    id("net.mamoe.mirai-console") version "2.15.0"
 }
 
 group = "tk.mcsog"
-version = "0.1.9"
+version = "0.2.0"
 
 repositories {
     mavenCentral()

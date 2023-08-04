@@ -17,7 +17,7 @@ object AdDetect : KotlinPlugin(
     JvmPluginDescription(
         id = "tk.mcsog.ad-detect",
         name = "Ad Detect",
-        version = "0.1.9",
+        version = "0.2.0",
     ) {
         author("MCSOG")
     }
@@ -626,7 +626,14 @@ object AdDetect : KotlinPlugin(
         groupInfo.inviteChain[qq]?.let { it2 ->
             groupInfo.inviteChain.remove(qq)
             chainDetect(group, it2, rule, groupInfo)
-            group.members[it2]?.kick("邀请链检测")
+            //group.members[it2]?.kick("邀请链检测")
+            group.members[it2]?.let { it3 ->
+                if (it3.permission.level < group.botPermission.level){
+                    it3.kick("邀请链检测")
+                }else{
+                    group.sendMessage(PlainText("权限不足，请移除"+At(it3.id)+" "+it3.id.toString()))
+                }
+            }
             if (it2 !in rule.blackList) {
                 rule.blackList.add(it2)
             }
@@ -634,7 +641,14 @@ object AdDetect : KotlinPlugin(
         if (qq !in rule.blackList) {
             rule.blackList.add(qq)
         }
-        group.members[qq]?.kick("")
+        //group.members[qq]?.kick("")
+        group.members[qq]?.let { it3 ->
+            if (it3.permission.level < group.botPermission.level){
+                it3.kick("")
+            }else{
+                group.sendMessage(PlainText("权限不足，请移除"+At(it3.id)+" "+it3.id.toString()))
+            }
+        }
         groupInfo.inviteChain.forEach {
             if (it.value == qq){
                 temp.add(it.key)
