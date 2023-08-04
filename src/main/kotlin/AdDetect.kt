@@ -17,7 +17,7 @@ object AdDetect : KotlinPlugin(
     JvmPluginDescription(
         id = "tk.mcsog.ad-detect",
         name = "Ad Detect",
-        version = "0.2.0",
+        version = "0.2.1",
     ) {
         author("MCSOG")
     }
@@ -31,7 +31,13 @@ object AdDetect : KotlinPlugin(
             PluginData.groupData[this.group.id]?.let { it1 ->
                 PluginData.ruleData[it1.rule]?.let { it2 ->
                     if (this.sender.id in it2.blackList) {
-                        this.message.recall()
+                        this.message.let {
+                            if (this.sender.permission.level < this.group.botPermission.level){
+                                it.recall()
+                            }else{
+                                group.sendMessage(PlainText("权限不足，请撤回")+At(this.sender.id)+PlainText(" "+this.sender.id.toString()))
+                            }
+                        }
                         this.group.sendMessage("检测到黑名单成员，已移出群")
                         //this.group.members[this.sender.id]?.kick("检测到黑名单成员，已移出群")
                         this.group.sendMessage("正在检测邀请链并移除")
@@ -45,7 +51,13 @@ object AdDetect : KotlinPlugin(
                     }else if (this.sender.id !in it2.admin){
                         if (it2.msgControl) {
                             if (it2.keyword.any { it3 -> this.message.serializeToMiraiCode().contains(it3) }) {
-                                this.message.recall()
+                                this.message.let {
+                                    if (this.sender.permission.level < this.group.botPermission.level){
+                                        it.recall()
+                                    }else{
+                                        group.sendMessage(PlainText("权限不足，请撤回")+At(this.sender.id)+PlainText(" "+this.sender.id.toString()))
+                                    }
+                                }
                                 this.group.sendMessage("检测到广告关键词，已移出群并加黑名单")
                                 it2.blackList.add(this.sender.id)
                                 //this.group.members[this.sender.id]?.kick("检测到广告关键词，已移出群")
@@ -631,7 +643,7 @@ object AdDetect : KotlinPlugin(
                 if (it3.permission.level < group.botPermission.level){
                     it3.kick("邀请链检测")
                 }else{
-                    group.sendMessage(PlainText("权限不足，请移除"+At(it3.id)+" "+it3.id.toString()))
+                    group.sendMessage(PlainText("权限不足，请移除")+At(it3.id)+PlainText(" "+it3.id.toString()))
                 }
             }
             if (it2 !in rule.blackList) {
@@ -646,7 +658,7 @@ object AdDetect : KotlinPlugin(
             if (it3.permission.level < group.botPermission.level){
                 it3.kick("")
             }else{
-                group.sendMessage(PlainText("权限不足，请移除"+At(it3.id)+" "+it3.id.toString()))
+                group.sendMessage(PlainText("权限不足，请移除")+At(it3.id)+PlainText(" "+it3.id.toString()))
             }
         }
         groupInfo.inviteChain.forEach {
