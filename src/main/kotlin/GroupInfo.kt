@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 data class GroupInfo(
     val groupNum: Long,
     var rule: String,
-    val inviteChain: MutableMap<Long, Long> = mutableMapOf()
+    val inviteChain: MutableMap<Long, Long> = mutableMapOf(),
+    var notify:Boolean = true
 )

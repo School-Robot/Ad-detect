@@ -17,7 +17,7 @@ object AdDetect : KotlinPlugin(
     JvmPluginDescription(
         id = "tk.mcsog.ad-detect",
         name = "Ad Detect",
-        version = "0.2.1",
+        version = "0.2.2",
     ) {
         author("MCSOG")
     }
@@ -96,7 +96,7 @@ object AdDetect : KotlinPlugin(
 
             // help
             if (m == "/adhelp"){
-                this.group.sendMessage(At(this.sender.id) +PlainText("/adcreate 规则名-创建规则\n/aduse 规则名-使用规则\n/addel 规则名-删除规则\n/adadminadd QQ-添加管理员\n/adadmindel QQ-删除管理员\n/admsg-切换消息监控\n/admsgadd 关键词-添加检测关键词\n/admsgdel 关键词-删除检测关键词\n/adjoin-切换加群监控\n/adwhiteadd QQ-添加白名单\n/adwhitedel QQ-删除白名单\n/adblackadd QQ-添加黑名单\n/adblackdel QQ-删除黑名单\n/adblackdetect-检测黑名单"))
+                this.group.sendMessage(At(this.sender.id) +PlainText("/adcreate 规则名-创建规则\n/aduse 规则名-使用规则\n/addel 规则名-删除规则\n/adnotify-切换昵称通知\n/adadminadd QQ-添加管理员\n/adadmindel QQ-删除管理员\n/admsg-切换消息监控\n/admsgadd 关键词-添加检测关键词\n/admsgdel 关键词-删除检测关键词\n/adjoin-切换加群监控\n/adwhiteadd QQ-添加白名单\n/adwhitedel QQ-删除白名单\n/adblackadd QQ-添加黑名单\n/adblackdel QQ-删除黑名单\n/adblackdetect-检测黑名单"))
                 return@subscribeAlways
             }
 
@@ -534,6 +534,25 @@ object AdDetect : KotlinPlugin(
                     return@subscribeAlways
                 }
             }
+
+            // notify
+            if (m == "/adnotify"){
+                PluginData.groupData[this.group.id]?.let { it1 ->
+                    PluginData.ruleData[it1.rule]?.let {
+                        if (this.sender.id in it.admin){
+                            it1.notify = !it1.notify
+                            this.group.sendMessage(At(this.sender.id) +PlainText("切换成功"))
+                            return@subscribeAlways
+                        }else{
+                            this.group.sendMessage(At(this.sender.id) +PlainText("权限不足"))
+                            return@subscribeAlways
+                        }
+                    }
+                    this.group.sendMessage(At(this.sender.id) +PlainText("规则不存在"))
+                    return@subscribeAlways
+                }
+                return@subscribeAlways
+            }
         }
 
         globalEventChannel().subscribeAlways<MemberJoinEvent> {
@@ -611,7 +630,9 @@ object AdDetect : KotlinPlugin(
 
         globalEventChannel().subscribeAlways<MemberCardChangeEvent> {
             PluginData.groupData[this.group.id]?.let {
-                this.group.sendMessage(this.member.id.toString()+"修改了群昵称： "+this.origin+" -> "+this.new)
+                if (it.notify){
+                    this.group.sendMessage(this.member.id.toString()+"修改了群昵称： "+this.origin+" -> "+this.new)
+                }
             }
         }
     }
